@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo
+  labels: { app: demo }
+spec:
+  selector: { app: demo }
+  ports:
+    - port: 80
+      targetPort: 8080
+---
+# Rollout canary — setWeight:50 + pause tanpa durasi (parkir sampai promote).
+# Pola ini yang dipakai drill recall (kit-fleet.md §Call chain): abort = recall,
+# promote-full = roll forward.
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: demo
+  labels: { app: demo }
+spec:
+  replicas: 2
+  selector:
+    matchLabels: { app: demo }
+  template:
+    metadata:
+      labels: { app: demo }
+    spec:
+      containers:
+        - name: demo
+          image: nginx:1.27.0-alpine
+          ports:
+            - containerPort: 8080
+          resources:
+            requests: { cpu: 50m, memory: 64Mi }
+            limits: { cpu: 200m, memory: 128Mi }
+  strategy:
+    canary:
+      steps:
+        - setWeight: 50
+        - pause: {}
