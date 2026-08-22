@@ -27,7 +27,7 @@ spec:
     spec:
       containers:
         - name: demo
-          image: nginx:1.27.1-alpine
+          image: nginx:1.27.0-alpine
           ports:
             - containerPort: 8080
           resources:
